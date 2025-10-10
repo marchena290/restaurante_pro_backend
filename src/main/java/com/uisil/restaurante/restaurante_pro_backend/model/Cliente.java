@@ -3,7 +3,6 @@ package com.uisil.restaurante.restaurante_pro_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-
 @Entity
 @Table(name = "clientes")
 @Getter
