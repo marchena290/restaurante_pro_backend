@@ -13,7 +13,6 @@ public interface IClienteService {
     Cliente crearCliente(Cliente cliente);
 
     // Obtener todos los Clientes
-    
     List<Cliente> obtenerTodosClientes();
 
     // Obtener Cliente por id
