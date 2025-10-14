@@ -42,12 +42,18 @@ public class ClienteController {
                 .orElseGet(() -> ResponseEntity.notFound().build()); // si esta vacio devuelve 404 not found
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente actualizarCliete){
+        Cliente clienteEditado = clienteService.actualizarCliente(id, actualizarCliete);
+        return  ResponseEntity.ok(clienteEditado);
+    }
+
     // eliminar
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long id){
         clienteService.eliminarCliente(id);
 
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
 
 }

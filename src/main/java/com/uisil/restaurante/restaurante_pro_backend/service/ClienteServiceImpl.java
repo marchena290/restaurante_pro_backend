@@ -20,13 +20,13 @@ public class ClienteServiceImpl implements IClienteService {
     }
 
     @Override
-    public Cliente crearCliente(Cliente cliente) {
-        Optional<Cliente> existeCliente = clienteRepository.findByEmail(cliente.getEmail());
+    public Cliente crearCliente(Cliente crearcliente) {
+        Optional<Cliente> existeCliente = clienteRepository.findByEmail(crearcliente.getEmail());
 
         if (existeCliente.isPresent()){
             throw new EmailDuplicadoException("El email introducido ya existe");
         }
-        return clienteRepository.save(cliente);
+        return clienteRepository.save(crearcliente);
     }
 
     @Override
@@ -40,6 +40,32 @@ public class ClienteServiceImpl implements IClienteService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", id));
 
         return Optional.of(clienteEncontrado);
+    }
+
+    @Override
+    public Cliente actualizarCliente(Long id, Cliente clienteActualizado){
+        return clienteRepository.findById(id)
+                .map(clienteExistente -> {
+
+                    String nuevoEmail = clienteActualizado.getEmail();
+                    // Si el nuevo email es diferente al que ya tiene el cliente existente,
+                    // Validamos unicidad
+                    if (!clienteExistente.getEmail().equals(nuevoEmail)){
+
+                        // Verificar si el nuevo email ya existe en OTRO cliente.
+                        if (clienteRepository.findByEmail(nuevoEmail).isPresent()){
+                            throw new EmailDuplicadoException("El email no esta disponible, porque esta siendo usando por otro cliente.");
+                        }
+
+                        clienteActualizado.setEmail(nuevoEmail);
+                    }
+                    clienteExistente.setNombre(clienteActualizado.getNombre());
+                    clienteExistente.setTelefono(clienteActualizado.getTelefono());
+                    clienteExistente.setDireccion(clienteActualizado.getDireccion());
+
+                    return clienteRepository.save(clienteExistente);
+        })
+         .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", id));
     }
 
     @Override

@@ -10,13 +10,16 @@ public interface IClienteService {
     // Metodos CRUD
 
     // Crear y guardar Cliente
-    Cliente crearCliente(Cliente cliente);
+    Cliente crearCliente(Cliente crearcliente);
 
     // Obtener todos los Clientes
     List<Cliente> obtenerTodosClientes();
 
     // Obtener Cliente por id
     Optional<Cliente> obtenerClientePorId(Long id);
+
+    // Actualizar Cliente
+   Cliente actualizarCliente(Long id, Cliente clienteActualizado);
 
     // Eliminar cliente
     void eliminarCliente(Long id);
