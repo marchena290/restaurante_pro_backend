@@ -32,26 +32,26 @@ public class ClienteController {
         return  ResponseEntity.ok(clientes);
     }
 
-    // Obtener Cliente por id
-    @GetMapping("/{id}")
-    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long id){
-        Optional<Cliente>  cliente = clienteService.obtenerClientePorId(id);
+    // Obtener Cliente por clienteId
+    @GetMapping("/{clienteId}")
+    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long clienteId){
+        Optional<Cliente>  cliente = clienteService.obtenerClientePorId(clienteId);
 
         return cliente
                 .map(ResponseEntity::ok) /// Si esta presente devuelve 200 ok
                 .orElseGet(() -> ResponseEntity.notFound().build()); // si esta vacio devuelve 404 not found
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente actualizarCliete){
-        Cliente clienteEditado = clienteService.actualizarCliente(id, actualizarCliete);
+    @PutMapping("/{clienteId}")
+    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long clienteId, @RequestBody Cliente actualizarCliete){
+        Cliente clienteEditado = clienteService.actualizarCliente(clienteId, actualizarCliete);
         return  ResponseEntity.ok(clienteEditado);
     }
 
     // eliminar
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarCliente(@PathVariable Long id){
-        clienteService.eliminarCliente(id);
+    @DeleteMapping("/{clienteId}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable Long clienteId){
+        clienteService.eliminarCliente(clienteId);
 
         return ResponseEntity.noContent().build();
     }

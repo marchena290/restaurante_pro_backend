@@ -18,8 +18,8 @@ public class Plato {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @Column(name = "plato_id")
+    private Long platoId;
 
     @Column(name = "nombre", length = 100)
     private String nombre;

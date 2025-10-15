@@ -32,27 +32,27 @@ public class PlatoController {
         return ResponseEntity.ok(platos);
     }
 
-    // Obtener plato por id
-    @GetMapping("/{id}")
-    public ResponseEntity<Plato> obtenerPorId(@PathVariable Long id){
-        Optional<Plato> plato = platoService.obtenerPlatoPorId(id);
+    // Obtener plato por platoId
+    @GetMapping("/{platoId}")
+    public ResponseEntity<Plato> obtenerPorId(@PathVariable Long platoId){
+        Optional<Plato> plato = platoService.obtenerPlatoPorId(platoId);
 
         return plato
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Plato ", id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Plato ", platoId));
     }
 
     // Actualizar plato
     @PutMapping("/{id}")
-    public ResponseEntity<Plato> actualizarPlato(@PathVariable Long id, @RequestBody Plato platoActualizado){
-        Plato actualizarPlato = platoService.actualizarPlato(id, platoActualizado);
+    public ResponseEntity<Plato> actualizarPlato(@PathVariable Long platoId, @RequestBody Plato platoActualizado){
+        Plato actualizarPlato = platoService.actualizarPlato(platoId, platoActualizado);
         return ResponseEntity.ok(actualizarPlato);
 
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarPlato(@PathVariable Long id){
-        platoService.eliminarPlato(id);
+    public ResponseEntity<Void> eliminarPlato(@PathVariable Long platoId){
+        platoService.eliminarPlato(platoId);
         return ResponseEntity.noContent().build();
     }
 

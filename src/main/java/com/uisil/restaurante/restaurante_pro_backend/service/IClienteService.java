@@ -15,12 +15,12 @@ public interface IClienteService {
     // Obtener todos los Clientes
     List<Cliente> obtenerTodosClientes();
 
-    // Obtener Cliente por id
-    Optional<Cliente> obtenerClientePorId(Long id);
+    // Obtener Cliente por clienteId
+    Optional<Cliente> obtenerClientePorId(Long clienteId);
 
     // Actualizar Cliente
-   Cliente actualizarCliente(Long id, Cliente clienteActualizado);
+   Cliente actualizarCliente(Long clienteId, Cliente clienteActualizado);
 
     // Eliminar cliente
-    void eliminarCliente(Long id);
+    void eliminarCliente(Long clienteId);
 }

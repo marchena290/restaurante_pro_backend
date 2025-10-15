@@ -4,20 +4,18 @@ import com.uisil.restaurante.restaurante_pro_backend.exception.EmailDuplicadoExc
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
 import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ClienteServiceImpl implements IClienteService {
 
     // Inyección
     private final ClienteRepository clienteRepository;
-
-    public ClienteServiceImpl(ClienteRepository clienteRepository){
-        this.clienteRepository = clienteRepository;
-    }
 
     @Override
     public Cliente crearCliente(Cliente crearcliente) {
@@ -35,16 +33,16 @@ public class ClienteServiceImpl implements IClienteService {
     }
 
     @Override
-    public Optional<Cliente> obtenerClientePorId(Long id){
-        Cliente clienteEncontrado = clienteRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", id));
+    public Optional<Cliente> obtenerClientePorId(Long clienteId){
+        Cliente clienteEncontrado = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", clienteId));
 
         return Optional.of(clienteEncontrado);
     }
 
     @Override
-    public Cliente actualizarCliente(Long id, Cliente clienteActualizado){
-        return clienteRepository.findById(id)
+    public Cliente actualizarCliente(Long clienteId, Cliente clienteActualizado){
+        return clienteRepository.findById(clienteId)
                 .map(clienteExistente -> {
 
                     String nuevoEmail = clienteActualizado.getEmail();
@@ -65,14 +63,14 @@ public class ClienteServiceImpl implements IClienteService {
 
                     return clienteRepository.save(clienteExistente);
         })
-         .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", id));
+         .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", clienteId));
     }
 
     @Override
-    public void eliminarCliente(Long id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new RecursoNoEncontradoException("Cliente" , id);
+    public void eliminarCliente(Long clienteId) {
+        if (!clienteRepository.existsById(clienteId)) {
+            throw new RecursoNoEncontradoException("Cliente ", clienteId);
         }
-        clienteRepository.deleteById(id);
+        clienteRepository.deleteById(clienteId);
     }
 }

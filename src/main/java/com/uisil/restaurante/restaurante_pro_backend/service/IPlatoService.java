@@ -14,12 +14,12 @@ public interface IPlatoService {
     // Obtener Todo los platos
     List<Plato> obtenerTodosLosPlatos();
 
-    // Obtener plato por id
-    Optional<Plato> obtenerPlatoPorId(Long id);
+    // Obtener plato por platoId
+    Optional<Plato> obtenerPlatoPorId(Long platoId);
 
     // Actualizar platillo
-    Plato actualizarPlato(Long id, Plato actualizarPlato);
+    Plato actualizarPlato(Long platoId, Plato actualizarPlato);
 
     // Eliminar Plato
-    void eliminarPlato (Long id);
+    void eliminarPlato (Long platoId);
 }

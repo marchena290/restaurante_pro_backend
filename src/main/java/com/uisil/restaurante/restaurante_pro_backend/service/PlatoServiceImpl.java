@@ -38,16 +38,16 @@ public class PlatoServiceImpl implements IPlatoService{
     }
 
     @Override
-    public Optional<Plato> obtenerPlatoPorId(Long id) {
-        Plato clienteEncontrado = platoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Plato", id));
+    public Optional<Plato> obtenerPlatoPorId(Long platoId) {
+        Plato clienteEncontrado = platoRepository.findById(platoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Plato", platoId));
 
         return Optional.of(clienteEncontrado);
     }
 
     @Override
-    public Plato actualizarPlato(Long id, Plato platoActualizado) {
-        return platoRepository.findById(id)
+    public Plato actualizarPlato(Long platoId, Plato platoActualizado) {
+        return platoRepository.findById(platoId)
                 .map(platoExistente ->{
                     String platonuevo = platoActualizado.getNombre();
 
@@ -66,14 +66,14 @@ public class PlatoServiceImpl implements IPlatoService{
 
                     return platoRepository.save(platoExistente);
                 })
-                .orElseThrow(() -> new RecursoNoEncontradoException("Plato", id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Plato", platoId));
     }
 
     @Override
-    public void eliminarPlato(Long id) {
-        if (!platoRepository.existsById(id)){
-            throw new RecursoNoEncontradoException("Plato" , id);
+    public void eliminarPlato(Long platoId) {
+        if (!platoRepository.existsById(platoId)){
+            throw new RecursoNoEncontradoException("Plato" , platoId);
         }
-        platoRepository.deleteById(id);
+        platoRepository.deleteById(platoId);
     }
 }
