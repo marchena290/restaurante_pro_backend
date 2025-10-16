@@ -1,5 +1,6 @@
 package com.uisil.restaurante.restaurante_pro_backend.repository;
 
+import com.uisil.restaurante.restaurante_pro_backend.model.Mesa;
 import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,5 +11,5 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findByCliente_ClienteId(Long clienteId);
 
-    List<Reserva> findByFechahoraInicioBetween(LocalDateTime fechaHoraInicio , LocalDateTime fechaFinreal);
+    List<Reserva> findByFechaHoraInicioBetweenAndMesaId(LocalDateTime fechaHoraInicio , LocalDateTime fechaFinreal, Mesa mesaId);
 }

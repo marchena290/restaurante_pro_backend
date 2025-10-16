@@ -3,7 +3,9 @@ package com.uisil.restaurante.restaurante_pro_backend.service;
 import com.uisil.restaurante.restaurante_pro_backend.exception.EmailDuplicadoException;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
 import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
+import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
+import com.uisil.restaurante.restaurante_pro_backend.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ public class ClienteServiceImpl implements IClienteService {
 
     // Inyección
     private final ClienteRepository clienteRepository;
+    private final ReservaRepository reservaRepository;
 
     @Override
     public Cliente crearCliente(Cliente crearcliente) {
@@ -68,9 +71,17 @@ public class ClienteServiceImpl implements IClienteService {
 
     @Override
     public void eliminarCliente(Long clienteId) {
-        if (!clienteRepository.existsById(clienteId)) {
-            throw new RecursoNoEncontradoException("Cliente ", clienteId);
+
+        // ver si el cliente existe
+        Cliente clienteEncontrado = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cliente ", clienteId));
+
+        // Ver si el cliente tiene un reserva Activa
+        List<Reserva> reservasActivas = reservaRepository.findByCliente_ClienteId(clienteId);
+        if (!reservasActivas.isEmpty()){
+            throw new RuntimeException("No se puede eliminar el cliente porque tiene una reserva activas.");
         }
-        clienteRepository.deleteById(clienteId);
+        // Eliminar Cliente
+        clienteRepository.delete(clienteEncontrado);
     }
 }

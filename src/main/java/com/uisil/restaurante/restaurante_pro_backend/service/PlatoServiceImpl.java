@@ -71,9 +71,8 @@ public class PlatoServiceImpl implements IPlatoService{
 
     @Override
     public void eliminarPlato(Long platoId) {
-        if (!platoRepository.existsById(platoId)){
-            throw new RecursoNoEncontradoException("Plato" , platoId);
-        }
-        platoRepository.deleteById(platoId);
+        Plato platoExiste = platoRepository.findById(platoId)
+                .orElseThrow(()-> new RecursoNoEncontradoException("Plato ", platoId));
+        platoRepository.delete(platoExiste);
     }
 }

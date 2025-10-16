@@ -40,4 +40,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    // 3. NUEVO: Maneja 400 Bad Request (Petición Inválida, Choque de Horario, etc.)
+    @ExceptionHandler(PeticionInvalida.class)
+    public  ResponseEntity<Object> handlePeticionInvalidaException(PeticionInvalida ex){
+
+        // Crea el cuerpo Json de la respuesta (similar al Email Duplicado)
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad request");
+        // El mensaje contendrá el detalle (ej: "El horario seleccionado choca...")
+        body.put("mensaje", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 }

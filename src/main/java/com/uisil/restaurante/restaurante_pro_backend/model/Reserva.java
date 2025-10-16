@@ -1,5 +1,6 @@
 package com.uisil.restaurante.restaurante_pro_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reservas"})
 public class Reserva {
 
     // 1. CLAVE PRIMARIA (PK)
