@@ -26,7 +26,7 @@ public class PlatoServiceImpl implements IPlatoService{
         // Nombre duplicado
         boolean platoExistente = platoRepository.existsByNombre(crearPlato.getNombre());
         if (platoExistente) {
-            throw new NombreDuplicadoException("El nombre del plato " + crearPlato.getNombre() + "ya existe.");
+            throw new NombreDuplicadoException("El nombre del plato " + crearPlato.getNombre() + " ya existe.");
         }
 
         return platoRepository.save(crearPlato);
@@ -66,7 +66,7 @@ public class PlatoServiceImpl implements IPlatoService{
 
                     return platoRepository.save(platoExistente);
                 })
-                .orElseThrow(() -> new RecursoNoEncontradoException("Plato", platoId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Plato ", platoId));
     }
 
     @Override

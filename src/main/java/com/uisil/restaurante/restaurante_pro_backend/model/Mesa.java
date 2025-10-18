@@ -18,7 +18,16 @@ public class Mesa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "mesa_id")
     private Long mesaId;
 
+    @Column(name = "numero_mesa")
+    private Integer numeroMesa;
+
+    @Column(name = "capacidad")
+    private Integer capacidad;
+
+    @Column(name = "estado")
+    private String estado;
 
 }

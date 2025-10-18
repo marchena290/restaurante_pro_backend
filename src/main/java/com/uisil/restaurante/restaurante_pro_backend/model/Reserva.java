@@ -42,8 +42,9 @@ public class Reserva {
     private Integer cantidadPersonas;
 
     // CAMPOS DE ESTADO Y NOTAS
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado", length = 20)
-    private String estado;
+    private EstadoReserva estado;
 
     @Column(name = "nota")
     private String nota;

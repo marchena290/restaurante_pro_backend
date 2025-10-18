@@ -1,9 +1,10 @@
 package com.uisil.restaurante.restaurante_pro_backend.service;
 
 import com.uisil.restaurante.restaurante_pro_backend.exception.EmailDuplicadoException;
+import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
 import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
-import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
+import com.uisil.restaurante.restaurante_pro_backend.model.EstadoReserva;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
@@ -76,11 +77,13 @@ public class ClienteServiceImpl implements IClienteService {
         Cliente clienteEncontrado = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente ", clienteId));
 
+        long reservasActivas  = reservaRepository.countByCliente_ClienteIdAndEstadoNot(clienteId, EstadoReserva.FINALIZADA);
+
         // Ver si el cliente tiene un reserva Activa
-        List<Reserva> reservasActivas = reservaRepository.findByCliente_ClienteId(clienteId);
-        if (!reservasActivas.isEmpty()){
-            throw new RuntimeException("No se puede eliminar el cliente porque tiene una reserva activas.");
+        if (reservasActivas > 0){
+            throw new PeticionInvalida("No se puede eliminar el cliente porque tiene " + reservasActivas + " reservas activas o futuras asociadas.");
         }
+
         // Eliminar Cliente
         clienteRepository.delete(clienteEncontrado);
     }

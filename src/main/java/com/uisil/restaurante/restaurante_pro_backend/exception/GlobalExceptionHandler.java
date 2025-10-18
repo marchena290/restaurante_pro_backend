@@ -55,4 +55,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    // 4. NUEVO: Maneja 400 Bad Request (Nombre de Plato Duplicado)
+    @ExceptionHandler(NombreDuplicadoException.class)
+    public  ResponseEntity<Object> handleNombreDuplicadoException(NombreDuplicadoException ex){
+
+        // Crea el cuerpo Json de la respuesta (similar a PeticionInvalida)
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad request");
+        // El mensaje contendrá el detalle (ej: "El nombre del plato ya existe...")
+        body.put("mensaje", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 }

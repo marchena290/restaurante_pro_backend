@@ -3,6 +3,7 @@ package com.uisil.restaurante.restaurante_pro_backend.service;
 import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
 import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
+import com.uisil.restaurante.restaurante_pro_backend.model.EstadoReserva;
 import com.uisil.restaurante.restaurante_pro_backend.model.Mesa;
 import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
@@ -137,16 +138,23 @@ public class ReservaServiceImpl implements IReservaService{
         // Obtener el objeto Mesa para la busqueda
         Mesa mesavalidacion = reserva.getMesaId();
 
-        // Ejecutar la búsqueda de posibles conflictos.
-        List<Reserva> conflictos = reservaRepository.findByFechaHoraInicioBetweenAndMesaId(nuevoInicio, nuevaFechaFin, mesavalidacion);
+        // 1. Obtener reservas que *no* sean FINALIZADA, para esta mesa.
+        List<Reserva> reservasExistentes = reservaRepository.findByMesaIdAndEstadoNot( mesavalidacion, EstadoReserva.FINALIZADA);
 
-        // Filtrar la lista de conflictos, excluyendo la reserva actual (si aplica, para PUT).
-        List<Reserva> choquesFiltrado = conflictos.stream()
-                // Si idAExcluir es null (caso POST), el filtro lo ignora.
+        // 2. Filtrar y buscar solapamientos.
+        List<Reserva> choquesFiltrado = reservasExistentes.stream()
                 .filter(r -> idAExcluir == null || !r.getReservaId().equals(idAExcluir))
+                .filter(reservasExistente -> {
+                    LocalDateTime existenteInicio = reservasExistente.getFechaHoraInicio();
+                    LocalDateTime existenteFin = existenteInicio.plusMinutes(reservasExistente.getDuracionMinutos());
+
+                    boolean haySolapamiento = existenteFin.isAfter(nuevoInicio) && existenteInicio.isBefore(nuevaFechaFin);
+
+                    return haySolapamiento;
+                })
                 .collect(Collectors.toList());
 
-        // Si quedan elementos después de filtrar, existe un choque real.
+        // 3. Si quedan elementos después de filtrar, existe un choque real.
         if (!choquesFiltrado.isEmpty()) {
             throw new PeticionInvalida("El horario seleccionado choca con una reserva existente para la misma mesa.");
         }
