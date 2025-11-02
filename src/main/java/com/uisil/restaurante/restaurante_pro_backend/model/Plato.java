@@ -32,8 +32,4 @@ public class Plato {
 
     @Column(name = "disponible", nullable = false)
     private boolean disponible;
-
-    @Column(name = "categoria_simple", length = 50)
-    private String categoriaSimple;
-
 }

@@ -62,7 +62,6 @@ public class PlatoServiceImpl implements IPlatoService{
                     platoExistente.setDescripcion(platoActualizado.getDescripcion());
                     platoExistente.setPrecio(platoActualizado.getPrecio());
                     platoExistente.setDisponible(platoActualizado.isDisponible());
-                    platoExistente.setCategoriaSimple(platoActualizado.getCategoriaSimple());
 
                     return platoRepository.save(platoExistente);
                 })

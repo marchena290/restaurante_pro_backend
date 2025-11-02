@@ -12,8 +12,4 @@ public interface PlatoRepository extends JpaRepository<Plato, Long> {
 
     // Este metodo devuelve una lista de todos los platos que están marcados como 'true'
     List<Plato> findByDisponibleTrue();
-
-    // Este metodo devuelve todos los platos que pertenecen a una categoría simple dada
-    List<Plato> findByCategoriaSimple(String categoriaSimple);
-
 }
