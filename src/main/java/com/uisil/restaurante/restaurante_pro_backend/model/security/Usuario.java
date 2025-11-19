@@ -9,6 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,23 +28,36 @@ public class Usuario implements UserDetails {
     @Column(name = "username", length = 50, nullable = false, unique = true)
     private String username;
 
-    @Column(name = "password", length = 255, nullable = false, unique = true)
+    @Column(name = "password", length = 255, nullable = false)
     private String password;
 
-    //Relacion mucho a muchos con roles
+    @Column(name = "nombre", length = 150)
+    private String nombre;
+
+    @Column(name = "email", length = 150)
+    private String email;
+
+    // Relación muchos-a-muchos con roles
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuario_rol",
-                joinColumns = @JoinColumn(name = "usuario_id"),
-                inverseJoinColumns = @JoinColumn(name = "rol_id"))
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "rol_id"))
     private Set<Rol> roles;
 
     // --- MÉTODOS DE USERDETAILS ---
-
-    // Este método transforma tus roles JPA a objetos de permisos de Spring Security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(rol -> new SimpleGrantedAuthority(rol.getNombreRol().name()))
+        return this.roles == null ? List.of() : this.roles.stream()
+                .map(rol -> {
+                    try {
+                        String name = rol.getNombreRol().toString(); // ajusta si tu Rol usa otro getter
+                        if (!name.startsWith("ROLE_")) name = "ROLE_" + name;
+                        return new SimpleGrantedAuthority(name);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

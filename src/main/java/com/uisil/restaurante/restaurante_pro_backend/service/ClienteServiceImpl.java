@@ -50,24 +50,32 @@ public class ClienteServiceImpl implements IClienteService {
                 .map(clienteExistente -> {
 
                     String nuevoEmail = clienteActualizado.getEmail();
-                    // Si el nuevo email es diferente al que ya tiene el cliente existente,
-                    // Validamos unicidad
-                    if (!clienteExistente.getEmail().equals(nuevoEmail)){
-
-                        // Verificar si el nuevo email ya existe en OTRO cliente.
-                        if (clienteRepository.findByEmail(nuevoEmail).isPresent()){
-                            throw new EmailDuplicadoException("El email no esta disponible, porque esta siendo usando por otro cliente.");
-                        }
-
-                        clienteActualizado.setEmail(nuevoEmail);
+                    if (nuevoEmail != null) {
+                        nuevoEmail = nuevoEmail.trim().toLowerCase(); // normalizar
                     }
+
+                    // si cambió el email (comparando normalizado)
+                    String emailExistente = clienteExistente.getEmail() != null
+                            ? clienteExistente.getEmail().trim().toLowerCase()
+                            : null;
+
+                    if (nuevoEmail != null && !nuevoEmail.equals(emailExistente)) {
+                        // Usa una búsqueda case-insensitive si la tienes; como alternativa
+                        // normalizamos y buscamos por el valor normalizado.
+                        Optional<Cliente> porEmail = clienteRepository.findByEmail(nuevoEmail);
+                        if (porEmail.isPresent() && !porEmail.get().getClienteId().equals(clienteId)) {
+                            throw new EmailDuplicadoException("El email no está disponible.");
+                        }
+                        clienteExistente.setEmail(nuevoEmail);
+                    }
+
                     clienteExistente.setNombre(clienteActualizado.getNombre());
                     clienteExistente.setTelefono(clienteActualizado.getTelefono());
                     clienteExistente.setDireccion(clienteActualizado.getDireccion());
 
                     return clienteRepository.save(clienteExistente);
-        })
-         .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", clienteId));
+                })
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", clienteId));
     }
 
     @Override

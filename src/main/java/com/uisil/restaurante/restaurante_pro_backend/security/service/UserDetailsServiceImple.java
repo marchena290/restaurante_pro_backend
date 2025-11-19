@@ -1,7 +1,9 @@
 package com.uisil.restaurante.restaurante_pro_backend.security.service;
 
+import com.uisil.restaurante.restaurante_pro_backend.model.security.Usuario;
 import com.uisil.restaurante.restaurante_pro_backend.repository.security.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

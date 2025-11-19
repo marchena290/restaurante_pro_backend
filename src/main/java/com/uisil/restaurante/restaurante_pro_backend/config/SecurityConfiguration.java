@@ -2,7 +2,6 @@ package com.uisil.restaurante.restaurante_pro_backend.config;
 
 import com.uisil.restaurante.restaurante_pro_backend.security.filter.SecurityFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +15,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -30,30 +34,38 @@ public class SecurityConfiguration {
      * Define la cadena de filtros de seguridad HTTP.
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        return httpSecurity
-                // 1. Deshabilita CSRF (Cross-Site Request Forgery) porque usamos JWT, no sesiones.
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // Orígenes permitidos en desarrollo (añade otros orígenes en producción)
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        // Permitir envío de cookies/credenciales (si usas cookies)
+        config.setAllowCredentials(true);
+        // Métodos permitidos
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Cabeceras permitidas
+        config.setAllowedHeaders(List.of("*"));
+        // Expone cabeceras si necesitas leerlas en el frontend
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // usa directamente el source
                 .csrf(csrf -> csrf.disable())
-
-                // 2. Configura la política de sesión como STATELY (sin estado)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 3. Define las reglas de autorización de las peticiones
                 .authorizeHttpRequests(auth -> auth
-
-                        // Permite el acceso a la ruta de login sin autenticación
-                        .requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll()
-
-                        // Permite el acceso a la ruta de registro sin autenticación (si la tienes)
-                        .requestMatchers(HttpMethod.POST,"/api/auth/register").permitAll()
-
-                        // Cualquier otra petición (ej. /api/pedidos, /api/usuarios) requiere autenticación
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .anyRequest().authenticated()
-
                 )
-                // 4. Añade nuestro filtro JWT ANTES del filtro de autenticación estándar de Spring
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return httpSecurity.build();
     }
 
     /**
