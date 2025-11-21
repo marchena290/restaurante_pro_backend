@@ -4,6 +4,7 @@ import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
 import com.uisil.restaurante.restaurante_pro_backend.model.EstadoReserva;
 import com.uisil.restaurante.restaurante_pro_backend.model.Mesa;
+import com.uisil.restaurante.restaurante_pro_backend.model.MesaEstado;
 import com.uisil.restaurante.restaurante_pro_backend.repository.MesaRepository;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +69,8 @@ public class MesaServiceImpl implements IMesaService{
         validarCapacidad(mesa.getCapacidad());
         validarNumeroMesaUnico(mesa.getNumeroMesa(), null);
 
+        mesa.setEstado(parseEstado(mesa.getEstado()));
+
         return mesaRepository.save(mesa);
     }
 
@@ -95,7 +98,7 @@ public class MesaServiceImpl implements IMesaService{
                     // Actualización de los campos
                     mesaOriginal.setNumeroMesa(actualizarMesa.getNumeroMesa());
                     mesaOriginal.setCapacidad(actualizarMesa.getCapacidad());
-                    mesaOriginal.setEstado(actualizarMesa.getEstado());
+                    mesaOriginal.setEstado(parseEstado(actualizarMesa.getEstado()));
 
                     return mesaRepository.save(mesaOriginal);
                 })
@@ -110,5 +113,44 @@ public class MesaServiceImpl implements IMesaService{
         // 2. Si pasa la validación, procedemos a eliminar.
         Mesa mesa = obtenerMesaPorId(mesaId);
         mesaRepository.delete(mesa);
+    }
+
+    // Normaliza distintos formatos de estado (enum, texto o código numérico)
+    private MesaEstado parseEstado(Object e) {
+        if (e == null) return MesaEstado.DISPONIBLE;
+
+        // Si ya es el enum, devolverlo directamente
+        if (e instanceof MesaEstado) {
+            return (MesaEstado) e;
+        }
+
+        // Si es número, mapear por código
+        if (e instanceof Number) {
+            int n = ((Number) e).intValue();
+            switch (n) {
+                case 2: return MesaEstado.OCUPADA;
+                case 3: return MesaEstado.RESERVADA;
+                case 4: return MesaEstado.MANTENIMIENTO;
+                default: return MesaEstado.DISPONIBLE;
+            }
+        }
+
+        // Tratar cadenas (ej: "1", "DISPONIBLE", "Disponible")
+        String s = e.toString().trim();
+        if (s.isEmpty()) return MesaEstado.DISPONIBLE;
+
+        // intentar como texto de enum
+        try {
+            return MesaEstado.valueOf(s.toUpperCase());
+        } catch (IllegalArgumentException ignored) {}
+
+        // intentar como código numérico en String
+        switch (s) {
+            case "1": return MesaEstado.DISPONIBLE;
+            case "2": return MesaEstado.OCUPADA;
+            case "3": return MesaEstado.RESERVADA;
+            case "4": return MesaEstado.MANTENIMIENTO;
+            default: return MesaEstado.DISPONIBLE;
+        }
     }
 }

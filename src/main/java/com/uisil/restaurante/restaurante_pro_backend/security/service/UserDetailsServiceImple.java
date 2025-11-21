@@ -17,7 +17,8 @@ public class UserDetailsServiceImple implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByUsername(username)
-                .orElseThrow(()-> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        // Soportar inicio de sesión por username o por email
+        return usuarioRepository.findByUsernameOrEmail(username, username)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
 }

@@ -27,7 +27,7 @@ public class Mesa {
     @Column(name = "capacidad")
     private Integer capacidad;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado")
-    private String estado;
-
+    private MesaEstado estado = MesaEstado.DISPONIBLE;
 }
