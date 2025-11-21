@@ -43,14 +43,14 @@ public class PlatoController {
     }
 
     // Actualizar plato
-    @PutMapping("/{id}")
+    @PutMapping("/{platoId}")
     public ResponseEntity<Plato> actualizarPlato(@PathVariable Long platoId, @RequestBody Plato platoActualizado){
         Plato actualizarPlato = platoService.actualizarPlato(platoId, platoActualizado);
         return ResponseEntity.ok(actualizarPlato);
 
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{platoId}")
     public ResponseEntity<Void> eliminarPlato(@PathVariable Long platoId){
         platoService.eliminarPlato(platoId);
         return ResponseEntity.noContent().build();
