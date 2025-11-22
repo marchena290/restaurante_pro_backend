@@ -40,8 +40,8 @@ public class SecurityConfiguration {
         config.setAllowedOrigins(List.of("http://localhost:4200"));
         // Permitir envío de cookies/credenciales (si usas cookies)
         config.setAllowCredentials(true);
-        // Métodos permitidos
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // <-- AÑADIR PATCH aquí
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         // Cabeceras permitidas
         config.setAllowedHeaders(List.of("*"));
         // Expone cabeceras si necesitas leerlas en el frontend
@@ -55,10 +55,12 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // usa directamente el source
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // usa el source configurado
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // permitir preflight OPTIONS sin autenticación
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .anyRequest().authenticated()

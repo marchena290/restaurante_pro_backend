@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mesas")
@@ -28,10 +29,10 @@ public class MesaController {
         return ResponseEntity.ok(mesas);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Mesa> obtener(@PathVariable Long mesaId){
+    // FIX: usar {mesaId} y PathVariable con el mismo nombre
+    @GetMapping("/{mesaId}")
+    public ResponseEntity<Mesa> obtener(@PathVariable("mesaId") Long mesaId){
         Mesa mesa = mesaService.obtenerMesaPorId(mesaId);
-
         return ResponseEntity.ok(mesa);
     }
 
@@ -48,4 +49,13 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/ocupadas")
+    public ResponseEntity<Map<String,Integer>> obtenerMesasOcupadas() {
+        List<Mesa> mesas = mesaService.obtenerTodasLasMesas();
+        int total = mesas.size();
+        int occupied = (int) mesas.stream()
+                .filter(m -> m.getEstado() != null && !m.getEstado().name().equalsIgnoreCase("DISPONIBLE"))
+                .count();
+        return ResponseEntity.ok(Map.of("occupied", occupied, "total", total));
+    }
 }

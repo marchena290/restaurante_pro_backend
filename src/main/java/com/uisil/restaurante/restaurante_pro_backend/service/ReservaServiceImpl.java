@@ -2,14 +2,13 @@ package com.uisil.restaurante.restaurante_pro_backend.service;
 
 import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
-import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
-import com.uisil.restaurante.restaurante_pro_backend.model.EstadoReserva;
-import com.uisil.restaurante.restaurante_pro_backend.model.Mesa;
-import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
+import com.uisil.restaurante.restaurante_pro_backend.model.*;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
+import com.uisil.restaurante.restaurante_pro_backend.repository.MesaRepository;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 public class ReservaServiceImpl implements IReservaService{
      private final ReservaRepository reservaRepository;
      private final ClienteRepository clienteRepository;
+     private final MesaRepository mesaRepository;
 
     @Override
     public Reserva crearReservacion(Reserva crearReservacion) {
@@ -158,5 +158,40 @@ public class ReservaServiceImpl implements IReservaService{
         if (!choquesFiltrado.isEmpty()) {
             throw new PeticionInvalida("El horario seleccionado choca con una reserva existente para la misma mesa.");
         }
+    }
+
+    @Transactional
+    public Reserva checkInReserva(Long reservaId, String performedBy) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Reserva", reservaId));
+
+        // Validar estado actual: permitir PENDIENTE o CONFIRMADA
+        if (!(EstadoReserva.PENDIENTE.equals(reserva.getEstado()) || EstadoReserva.CONFIRMADO.equals(reserva.getEstado()))) {
+            throw new PeticionInvalida("Sólo se puede hacer check-in de reservas en estado PENDIENTE o CONFIRMADA.");
+        }
+
+        // Marcar reserva como EN_CURSO y asignar fechaConfirmacion si no existe
+        reserva.setEstado(EstadoReserva.EN_CURSO);
+        if (reserva.getFechaConfirmacion() == null) {
+            reserva.setFechaConfirmacion(LocalDateTime.now());
+        }
+
+
+        Mesa mesa = reserva.getMesaId();
+
+        if (mesa == null && reserva.getMesaId() != null) {
+            mesa = mesaRepository.findById(reserva.getMesaId().getMesaId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Mesa", reserva.getMesaId().getMesaId()));
+        }
+
+        if (mesa != null) {
+            mesa.setEstado(MesaEstado.OCUPADA);
+            mesaRepository.save(mesa);
+
+            reserva.setMesaId(mesa);
+        }
+
+        // Guardar reserva (todo dentro de la transacción)
+        return reservaRepository.save(reserva);
     }
 }

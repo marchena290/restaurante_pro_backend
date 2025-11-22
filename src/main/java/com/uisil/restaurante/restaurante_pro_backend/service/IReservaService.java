@@ -20,4 +20,6 @@ public interface IReservaService {
     Reserva actualizarReservacion(Long reservacionId, Reserva actualizarReservacion );
 
     void eliminarReservacion(Long reservacionId);
+
+    Reserva checkInReserva(Long reservaId, String performedBy);
 }
