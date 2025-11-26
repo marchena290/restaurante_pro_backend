@@ -2,6 +2,7 @@ package com.uisil.restaurante.restaurante_pro_backend.controller;
 
 import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
+import com.uisil.restaurante.restaurante_pro_backend.exception.ReservationOverlapException;
 import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
 import com.uisil.restaurante.restaurante_pro_backend.model.EstadoReserva;
 import com.uisil.restaurante.restaurante_pro_backend.model.Mesa;
@@ -62,9 +63,13 @@ public class ReservaController {
             return new ResponseEntity<>(creada, HttpStatus.CREATED);
 
         } catch (RecursoNoEncontradoException ex) {
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (ReservationOverlapException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("mensaje", ex.getMessage(), "codigo", "RESERVA_SOLAPA"));
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear la reservacion: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al crear la reservacion: " + ex.getMessage());
         }
     }
 

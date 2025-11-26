@@ -2,6 +2,7 @@ package com.uisil.restaurante.restaurante_pro_backend.service;
 
 import com.uisil.restaurante.restaurante_pro_backend.exception.PeticionInvalida;
 import com.uisil.restaurante.restaurante_pro_backend.exception.RecursoNoEncontradoException;
+import com.uisil.restaurante.restaurante_pro_backend.exception.ReservationOverlapException;
 import com.uisil.restaurante.restaurante_pro_backend.model.*;
 import com.uisil.restaurante.restaurante_pro_backend.repository.ClienteRepository;
 import com.uisil.restaurante.restaurante_pro_backend.repository.MesaRepository;
@@ -92,10 +93,12 @@ public class ReservaServiceImpl implements IReservaService{
                         reservaOriginal.setCliente(actualizarReservacion.getCliente());
                     }
 
-                    // 3. VALIDACIÓN: La nueva fecha de inicio no debe ser en el pasado.
+                    // 3. VALIDACIÓN: Solo bloquear si se está cambiando la fecha de inicio a una fecha pasada.
                     LocalDateTime fechaHoraInicio = actualizarReservacion.getFechaHoraInicio();
-                    if (fechaHoraInicio.isBefore(LocalDateTime.now())){
-                        throw new PeticionInvalida("La fecha y hora de inicio de la reserva no puede ser anterior a la hora actual.");
+                    if (!Objects.equals(reservaOriginal.getFechaHoraInicio(), fechaHoraInicio)) {
+                        if (fechaHoraInicio.isBefore(LocalDateTime.now())) {
+                            throw new PeticionInvalida("La fecha y hora de inicio de la reserva no puede ser anterior a la hora actual.");
+                        }
                     }
 
                     // 4. VALIDACIÓN: Modificación prohibida si la reserva inicia en <= 30 minutos.
@@ -156,7 +159,7 @@ public class ReservaServiceImpl implements IReservaService{
 
         // 3. Si quedan elementos después de filtrar, existe un choque real.
         if (!choquesFiltrado.isEmpty()) {
-            throw new PeticionInvalida("El horario seleccionado choca con una reserva existente para la misma mesa.");
+            throw new ReservationOverlapException("El horario seleccionado choca con una reserva existente para la misma mesa.");
         }
     }
 

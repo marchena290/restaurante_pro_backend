@@ -102,10 +102,23 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.UNAUTHORIZED, "Unauthorized", "Usuario o contraseña incorrectos");
     }
 
+    @ExceptionHandler(ReservationOverlapException.class)
+    public ResponseEntity<Object> handleReservationOverlap(ReservationOverlapException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", OffsetDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Conflict");
+        body.put("mensaje", ex.getMessage());
+        body.put("codigo", "RESERVA_SOLAPA");
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
     // 8. Handler genérico para errores inesperados (500) — registra el stacktrace en el log
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneralException(Exception ex) {
         logger.error("Error inesperado en la aplicación", ex);
         return buildResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Ocurrió un error inesperado en el servidor.");
     }
+
+
 }
