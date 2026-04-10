@@ -28,10 +28,13 @@ public class MesaServiceImpl implements IMesaService{
 
     // Válida que el número de mesa no esté duplicado
     public void validarNumeroMesaUnico(Integer numeroMesa, Long idExcluir){
+        if (numeroMesa == null || numeroMesa < 1 || numeroMesa > 100) {
+            throw new PeticionInvalida("El número de mesa debe estar entre 1 y 100");
+        }
         // Busca si ya existe una mesa con ese número
         Optional<Mesa> mesaExistente = mesaRepository.findByNumeroMesa(numeroMesa);
 
-        // !Objects.equals comparar valor a un sean nulos
+        // Compara el ID de la mesa existente con el ID a excluir
         if (mesaExistente.isPresent() && !Objects.equals(mesaExistente.get().getMesaId(), idExcluir)){
             throw new PeticionInvalida("Ya existe una mesa con el número: " + numeroMesa);
         }
@@ -40,8 +43,8 @@ public class MesaServiceImpl implements IMesaService{
 
     // Válida que la capacidad sea un número positivo (> 0)
     public void validarCapacidad(Integer capacidad){
-        if (capacidad == null || capacidad <= 0) {
-            throw new PeticionInvalida("La capacidad de la mesa debe ser un valor entero mayor a cero");
+        if (capacidad == null || capacidad < 1 || capacidad > 20) {
+            throw new PeticionInvalida("La capacidad de la mesa debe estar entre 1 y 20");
         }
     }
 

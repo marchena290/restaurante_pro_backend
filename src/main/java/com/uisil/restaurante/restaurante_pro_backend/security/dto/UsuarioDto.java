@@ -1,10 +1,18 @@
 package com.uisil.restaurante.restaurante_pro_backend.security.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "UsuarioDto", description = "Datos publicos del usuario")
 public class UsuarioDto {
+    @Schema(description = "Identificador del usuario", example = "1")
     private Long id;
+    @Schema(description = "Username unico", example = "admin")
     private String username;
+    @Schema(description = "Nombre para mostrar", example = "Administrador")
     private String nombre;
+    @Schema(description = "Correo del usuario", example = "admin@restaurante.com")
     private String email;
+    @Schema(description = "Rol principal", example = "ROLE_ADMIN")
     private String role;
 
     public UsuarioDto() {}

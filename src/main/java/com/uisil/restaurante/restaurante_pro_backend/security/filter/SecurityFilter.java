@@ -35,6 +35,13 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+                
+        String requestURI = request.getRequestURI();
+        if(requestURI.contains("/swagger-ui") || requestURI.contains("/v3/api-docs")) {
+            // No aplicar el filtro a las rutas de Swagger
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 1. Obtener el token del encabezado (Header) de la petición
         String tokenJWT = recuperarToken(request);
