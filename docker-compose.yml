@@ -6,9 +6,9 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=restaurante_db
+      - POSTGRES_USER=user_rest
+      - POSTGRES_PASSWORD=pass_rest
     ports:
       - "5432:5432"
     volumes:
@@ -30,6 +30,7 @@ services:
         condition: service_healthy
     environment:
       # Mapeo exacto para tu application.properties
+      - TZ=America/Costa_Rica
       - DB_HOST=db:5432
       - DB_RESTAURANTE=${DB_NAME}
       - DB_USER=${DB_USER}
