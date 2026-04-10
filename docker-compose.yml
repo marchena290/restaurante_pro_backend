@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Servicio de Base de Datos (PostgreSQL)
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -19,7 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Tu aplicación Backend (Spring Boot)
   backend:
     build: .
     container_name: spring_restaurante
@@ -29,7 +27,6 @@ services:
       db:
         condition: service_healthy
     environment:
-      # Mapeo exacto para tu application.properties
       - TZ=America/Costa_Rica
       - DB_HOST=db:5432
       - DB_RESTAURANTE=${DB_NAME}
