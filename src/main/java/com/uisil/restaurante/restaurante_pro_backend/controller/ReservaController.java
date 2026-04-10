@@ -14,6 +14,10 @@ import com.uisil.restaurante.restaurante_pro_backend.security.dto.ChangeEstadoDt
 import com.uisil.restaurante.restaurante_pro_backend.security.dto.CreateReservaDto;
 import com.uisil.restaurante.restaurante_pro_backend.security.dto.UpdateReservaDto;
 import com.uisil.restaurante.restaurante_pro_backend.service.IReservaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +35,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/reservas")
 @RequiredArgsConstructor
+@Tag(name = "Reservas", description = "Operaciones de gestion de reservas")
 public class ReservaController {
 
     private final IReservaService reservaService;
@@ -40,6 +45,14 @@ public class ReservaController {
 
     // Crear una reservacion
     @PostMapping
+        @Operation(summary = "Crear reserva")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Reserva creada"),
+            @ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @ApiResponse(responseCode = "404", description = "Cliente o mesa no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Reserva en conflicto de horario"),
+            @ApiResponse(responseCode = "500", description = "Error interno")
+        })
     public ResponseEntity<?> crearReservacion(@RequestBody @Valid CreateReservaDto dto){
         try {
             if(dto.clienteId == null) return ResponseEntity.badRequest().body("clienteId es requerido");
@@ -75,6 +88,8 @@ public class ReservaController {
 
     // Mostrar todas las reservaciones
     @GetMapping
+    @Operation(summary = "Listar reservas")
+    @ApiResponse(responseCode = "200", description = "Listado obtenido")
     public ResponseEntity<List<Reserva>> obtenerTodasLasReservaciones() {
         List<Reserva> reservas = reservaService.obtenerTodasLasReservaciones();
         return ResponseEntity.ok(reservas);
@@ -82,6 +97,11 @@ public class ReservaController {
 
     // Nuevo: stats para dashboard -> /api/reservas/stats?days=7
     @GetMapping("/stats")
+        @Operation(
+            summary = "Obtener estadisticas de reservas",
+            description = "Devuelve la cantidad de reservas por dia para la ventana de N dias indicada."
+        )
+        @ApiResponse(responseCode = "200", description = "Estadisticas generadas")
     public ResponseEntity<List<Map<String,Object>>> statsReservas(@RequestParam(value = "days", defaultValue = "7") int days) {
         LocalDate today = LocalDate.now();
         LocalDate start = today.minusDays(Math.max(0, days - 1));
@@ -111,6 +131,11 @@ public class ReservaController {
 
     // Obtener por id (asegurarse que el nombre coincide con PathVariable)
     @GetMapping("/{reservaId}")
+        @Operation(summary = "Obtener reserva por ID")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reserva encontrada"),
+            @ApiResponse(responseCode = "404", description = "Reserva no encontrada")
+        })
     public ResponseEntity<Reserva> obtenerReservacionPorId(@PathVariable("reservaId") Long reservaId){
         return reservaService.obtenerReservacionPorId(reservaId)
                 .map(ResponseEntity::ok)
@@ -118,6 +143,13 @@ public class ReservaController {
     }
 
     @PutMapping("/{reservaId}")
+        @Operation(summary = "Actualizar reserva")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reserva actualizada"),
+            @ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @ApiResponse(responseCode = "404", description = "Reserva o mesa no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno")
+        })
     public  ResponseEntity<?> actualizarReservacion(@PathVariable("reservaId") Long reservaId, @RequestBody @Valid UpdateReservaDto dto){
         try {
             Reserva existente = reservaService.obtenerReservacionPorId(reservaId)
@@ -151,6 +183,13 @@ public class ReservaController {
     }
 
     @DeleteMapping("/{reservaId}")
+        @Operation(summary = "Eliminar reserva")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Reserva eliminada"),
+            @ApiResponse(responseCode = "403", description = "No permitido por estado"),
+            @ApiResponse(responseCode = "404", description = "Reserva no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno")
+        })
     public ResponseEntity<?> eliminarReservacion(@PathVariable("reservaId") Long reservaId) {
         try {
             Reserva r = reservaService.obtenerReservacionPorId(reservaId)
@@ -173,6 +212,16 @@ public class ReservaController {
     // dentro de ReservaController
     @PatchMapping("/{id}/estado")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+        @Operation(
+            summary = "Cambiar estado de reserva",
+            description = "Permite transiciones controladas de estado y valida reglas de negocio."
+        )
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado actualizado"),
+            @ApiResponse(responseCode = "400", description = "Estado invalido o faltante"),
+            @ApiResponse(responseCode = "404", description = "Reserva no encontrada"),
+            @ApiResponse(responseCode = "409", description = "Transicion de estado no permitida")
+        })
     public ResponseEntity<?> changeEstado(@PathVariable Long id, @RequestBody ChangeEstadoDto dto) {
         // Buscar reserva
         Optional<Reserva> optional = reservaRepository.findById(id);
@@ -217,6 +266,16 @@ public class ReservaController {
 
     @PostMapping("/{id}/checkin")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+        @Operation(
+            summary = "Registrar check-in",
+            description = "Marca una reserva como en curso segun validaciones del flujo operativo."
+        )
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Check-in registrado"),
+            @ApiResponse(responseCode = "400", description = "Peticion invalida"),
+            @ApiResponse(responseCode = "404", description = "Reserva no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno")
+        })
     public ResponseEntity<?> checkIn(@PathVariable("id") Long id, Principal principal) {
         try {
             String username = principal != null ? principal.getName() : null;

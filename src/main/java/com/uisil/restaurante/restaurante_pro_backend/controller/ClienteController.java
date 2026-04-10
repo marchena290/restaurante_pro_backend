@@ -4,7 +4,12 @@ import com.uisil.restaurante.restaurante_pro_backend.model.Cliente;
 import com.uisil.restaurante.restaurante_pro_backend.model.Reserva;
 import com.uisil.restaurante.restaurante_pro_backend.service.IClienteService;
 import com.uisil.restaurante.restaurante_pro_backend.service.IReservaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/clientes")
 @RequiredArgsConstructor
+@Tag(name = "Clientes", description = "Operaciones de gestion de clientes")
 public class ClienteController {
 
     private final IClienteService clienteService;
@@ -25,14 +31,21 @@ public class ClienteController {
 
     // Crear un cliente
     @PostMapping
+    @Operation(summary = "Crear cliente")
+    @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Cliente creado"),
+            @ApiResponse(responseCode = "400", description = "Datos invalidos")
+    })
     public ResponseEntity<Cliente> crearCliente(@RequestBody Cliente cliente){
         Cliente nuevoCliente = clienteService.crearCliente(cliente);
 
-        return  ResponseEntity.ok(nuevoCliente);
+                return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
     }
 
     // Obtener todos los clientes
     @GetMapping
+    @Operation(summary = "Listar clientes")
+    @ApiResponse(responseCode = "200", description = "Listado obtenido")
     public ResponseEntity<List<Cliente>> obtenerTodos(){
         List<Cliente> clientes = clienteService.obtenerTodosClientes();
 
@@ -41,6 +54,11 @@ public class ClienteController {
 
     // Obtener Cliente por clienteId
     @GetMapping("/{clienteId}")
+    @Operation(summary = "Obtener cliente por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cliente encontrado"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long clienteId){
         Optional<Cliente>  cliente = clienteService.obtenerClientePorId(clienteId);
 
@@ -50,6 +68,11 @@ public class ClienteController {
     }
 
     @PutMapping("/{clienteId}")
+    @Operation(summary = "Actualizar cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cliente actualizado"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long clienteId, @RequestBody Cliente actualizarCliete){
         Cliente clienteEditado = clienteService.actualizarCliente(clienteId, actualizarCliete);
         return  ResponseEntity.ok(clienteEditado);
@@ -57,6 +80,11 @@ public class ClienteController {
 
     // eliminar
     @DeleteMapping("/{clienteId}")
+    @Operation(summary = "Eliminar cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Cliente eliminado"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long clienteId){
         clienteService.eliminarCliente(clienteId);
 
@@ -65,6 +93,11 @@ public class ClienteController {
 
     // NEW: /api/clientes/activos?days=30  -> cuenta clientes únicos con reservas en el periodo
     @GetMapping("/activos")
+    @Operation(
+            summary = "Contar clientes activos",
+            description = "Devuelve la cantidad de clientes unicos con reservas desde los ultimos N dias."
+    )
+    @ApiResponse(responseCode = "200", description = "Conteo generado")
     public ResponseEntity<Map<String,Integer>> clientesActivos(@RequestParam(value="days", defaultValue="30") int days) {
         LocalDateTime since = LocalDateTime.now().minusDays(days);
         List<Reserva> recientes = reservaService.obtenerTodasLasReservaciones()
