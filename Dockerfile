@@ -1,15 +1,15 @@
-# Usamos la imagen oficial de Eclipse Temurin para Java 21 con Alpine Linux
-FROM eclipse-temurin:21-jdk-alpine
-
-# Directorio de trabajo dentro del contenedor
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copiamos el JAR generado por Maven
-# Importante: El nombre debe coincidir con lo que genera tu pom.xml
-COPY target/*.jar app.jar
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests clean package
 
-# Exponemos el puerto
+FROM eclipse-temurin:21-jre-alpine AS run
+WORKDIR /app
+
+# En lugar de *.jar, buscamos el que NO sea el .original
+COPY --from=build /app/target/restaurante-pro-backend-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
-
-# Ejecutamos la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -33,30 +33,17 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
     @Override
     public void run(String... args) throws Exception {
+        Rol adminRol = rolRepository.findByNombreRol(NombreRol.ROLE_ADMIN)
+                .orElseGet(() -> rolRepository.save(new Rol(null, NombreRol.ROLE_ADMIN)));
 
-        if (rolRepository.count() == 0){
-            Rol adminRol = new Rol(null, NombreRol.ROLE_ADMIN);
-            Rol userRol = new Rol(null, NombreRol.ROLE_EMPLEADO);
+        rolRepository.findByNombreRol(NombreRol.ROLE_EMPLEADO)
+            .orElseGet(() -> rolRepository.save(new Rol(null, NombreRol.ROLE_EMPLEADO)));
 
-            rolRepository.save(adminRol);
-            rolRepository.save(userRol);
-
-            System.out.println("Roles de seguridad inicializados.");
-        }
-        if (usuarioRepository.findByUsername("admin").isEmpty()){
-
-            // 1. OBTENER EL ROL DE LA BASE DE DATOS
-            Rol adminRol = rolRepository.findByNombreRol(NombreRol.ROLE_ADMIN).
-                    orElseThrow(() -> new RuntimeException("El rol ADMIN no existe"));
+        if (usuarioRepository.findByUsername("admin").isEmpty()) {
             Usuario admin = new Usuario();
             admin.setUsername("admin");
-
-            // 2. HASHEAR LA CONTRASEÑA ANTES DE GUARDARLA;
-
             admin.setPassword(passwordEncoder.encode("123456"));
-
             admin.setRoles(Set.of(adminRol));
-
             usuarioRepository.save(admin);
 
             System.out.println("Usuario de prueba 'admin' creado exitosamente.");
