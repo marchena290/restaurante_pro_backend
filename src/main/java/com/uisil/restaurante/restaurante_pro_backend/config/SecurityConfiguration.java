@@ -2,6 +2,7 @@ package com.uisil.restaurante.restaurante_pro_backend.config;
 
 import com.uisil.restaurante.restaurante_pro_backend.security.filter.SecurityFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,8 @@ public class SecurityConfiguration {
 
     // Inyectamos nuestro filtro personalizado
     private final SecurityFilter securityFilter;
+    @Value("${FRONTEND_URL:http://localhost:4200}")
+    private String frontendUrl;
 
     /**
      * Define la cadena de filtros de seguridad HTTP.
@@ -36,8 +39,8 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Orígenes permitidos en desarrollo (añade otros orígenes en producción)
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        // Permite desarrollo local y un dominio de frontend externo configurable.
+        config.setAllowedOrigins(List.of("http://localhost:4200", frontendUrl));
         // Permitir envío de cookies/credenciales (si usas cookies)
         config.setAllowCredentials(true);
         // <-- AÑADIR PATCH aquí
