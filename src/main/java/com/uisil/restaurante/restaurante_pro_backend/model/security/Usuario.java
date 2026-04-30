@@ -50,7 +50,7 @@ public class Usuario implements UserDetails {
         return this.roles == null ? List.of() : this.roles.stream()
                 .map(rol -> {
                     try {
-                        String name = rol.getNombreRol().toString(); // ajusta si tu Rol usa otro getter
+                        String name = rol.getNombreRol().toString();
                         if (!name.startsWith("ROLE_")) name = "ROLE_" + name;
                         return new SimpleGrantedAuthority(name);
                     } catch (Exception e) {

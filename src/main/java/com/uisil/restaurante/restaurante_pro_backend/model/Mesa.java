@@ -38,6 +38,10 @@ public class Mesa {
     @Schema(description = "Capacidad maxima de personas", example = "4")
     private Integer capacidad;
 
+    @Column(name = "ubicacion")
+    @Schema(description = "Ubicación de la mesa", example = "Terraza")
+    private String ubicacion;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     @Schema(description = "Estado actual de la mesa", example = "DISPONIBLE")

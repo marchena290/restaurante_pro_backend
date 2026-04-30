@@ -33,3 +33,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore local DB init scripts
+init.sql
+docker-entrypoint-initdb.d/

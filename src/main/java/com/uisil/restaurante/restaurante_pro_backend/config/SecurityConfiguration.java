@@ -20,7 +20,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -30,8 +33,24 @@ public class SecurityConfiguration {
 
     // Inyectamos nuestro filtro personalizado
     private final SecurityFilter securityFilter;
-    @Value("${FRONTEND_URL:http://localhost:4200}")
+    @Value("${FRONTEND_URL:}")
     private String frontendUrl;
+
+    private List<String> resolveAllowedOrigins() {
+        Set<String> origins = new LinkedHashSet<>(List.of(
+                "http://localhost:4200",
+                "http://127.0.0.1:4200"
+        ));
+
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            Arrays.stream(frontendUrl.split(","))
+                    .map(String::trim)
+                    .filter(origin -> !origin.isEmpty())
+                    .forEach(origins::add);
+        }
+
+        return List.copyOf(origins);
+    }
 
     /**
      * Define la cadena de filtros de seguridad HTTP.
@@ -39,11 +58,10 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Permite desarrollo local y un dominio de frontend externo configurable.
-        config.setAllowedOrigins(List.of("http://localhost:4200", frontendUrl));
+        // Permite localhost, 127.0.0.1 y dominios adicionales desde FRONTEND_URL.
+        config.setAllowedOrigins(resolveAllowedOrigins());
         // Permitir envío de cookies/credenciales (si usas cookies)
         config.setAllowCredentials(true);
-        // <-- AÑADIR PATCH aquí
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         // Cabeceras permitidas
         config.setAllowedHeaders(List.of("*"));
@@ -65,8 +83,33 @@ public class SecurityConfiguration {
                         // permitir preflight OPTIONS sin autenticación
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // Lectura restringida a roles invitados/autenticados
+                        .requestMatchers(HttpMethod.GET, "/api/platos/**", "/api/mesas/**", "/api/reservas/**")
+                        .hasAnyRole("GUEST", "EMPLEADO", "ADMIN")
+
+                        // Escrituras en platos y mesas: solo ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/platos/**", "/api/mesas/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/platos/**", "/api/mesas/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/platos/**", "/api/mesas/**")
+                        .hasRole("ADMIN")
+
+                        // Escrituras en reservas: ADMIN o EMPLEADO
+                        .requestMatchers(HttpMethod.POST, "/api/reservas/*/estado", "/api/reservas/*/checkin")
+                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers(HttpMethod.POST, "/api/reservas/**")
+                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers(HttpMethod.PUT, "/api/reservas/**")
+                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers(HttpMethod.PATCH, "/api/reservas/**")
+                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/reservas/**")
+                        .hasAnyRole("ADMIN", "EMPLEADO")
+
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
