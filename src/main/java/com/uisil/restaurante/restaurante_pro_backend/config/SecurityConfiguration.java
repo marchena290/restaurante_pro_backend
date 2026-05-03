@@ -2,7 +2,6 @@ package com.uisil.restaurante.restaurante_pro_backend.config;
 
 import com.uisil.restaurante.restaurante_pro_backend.security.filter.SecurityFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,10 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -33,24 +29,6 @@ public class SecurityConfiguration {
 
     // Inyectamos nuestro filtro personalizado
     private final SecurityFilter securityFilter;
-    @Value("${FRONTEND_URL:}")
-    private String frontendUrl;
-
-    private List<String> resolveAllowedOrigins() {
-        Set<String> origins = new LinkedHashSet<>(List.of(
-                "http://localhost:4200",
-                "http://127.0.0.1:4200"
-        ));
-
-        if (frontendUrl != null && !frontendUrl.isBlank()) {
-            Arrays.stream(frontendUrl.split(","))
-                    .map(String::trim)
-                    .filter(origin -> !origin.isEmpty())
-                    .forEach(origins::add);
-        }
-
-        return List.copyOf(origins);
-    }
 
     /**
      * Define la cadena de filtros de seguridad HTTP.
@@ -58,14 +36,14 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Permite localhost, 127.0.0.1 y dominios adicionales desde FRONTEND_URL.
-        config.setAllowedOrigins(resolveAllowedOrigins());
-        // Permitir envío de cookies/credenciales (si usas cookies)
+    config.setAllowedOriginPatterns(List.of(
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "https://restaurante-pro.vercel.app"
+    ));
         config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        // Cabeceras permitidas
         config.setAllowedHeaders(List.of("*"));
-        // Expone cabeceras si necesitas leerlas en el frontend
         config.setExposedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
